@@ -8,7 +8,7 @@
     "node": "16.x"
   },
   "scripts": {
-    "dev": "node ./src/main.js",
+    "dev": "tsnd ./src/main.ts",
     "start": "node ./dist/main.js",
     "build": "tsc"
   },
