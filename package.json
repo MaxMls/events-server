@@ -1,0 +1,24 @@
+{
+  "name": "events-server",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Max <max3jk@gmail.com>",
+  "license": "MIT",
+  "engines": {
+    "node": "16.x"
+  },
+  "scripts": {
+    "dev": "node ./src/main.js",
+    "start": "node ./dist/main.js",
+    "build": "tsc"
+  },
+  "pre-commit": [
+    "build"
+  ],
+  "devDependencies": {
+    "@types/node": "^16.4.3",
+    "ts-node-dev": "^1.1.8",
+    "typescript": "^4.3.5",
+    "pre-commit": "^1.2.2"
+  }
+}
