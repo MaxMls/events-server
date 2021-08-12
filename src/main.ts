@@ -1,9 +1,18 @@
 const http = require('http');
 const EventEmitter = require('events');
 const eventEmitter = new EventEmitter()
-http.createServer((req, res) => {
-	// console.log('request ', req.url, req.method, /*req.headers*/);
+/*
+const events = new Map<string, { history: string[] }>()
+const createEvent = (eventName) => {
+	events.set(eventName, {history: []})
+}
+const destroyEvent = (eventName) => {
+	events.delete(eventName)
+}*/
 
+http.createServer((req, res) => {
+	const url = new URL(req.url, req.headers.origin || 'http://localhost');
+	const id = url.searchParams.get('id')
 	res.setHeader('Cache-Control', 'no-cache')
 	res.setHeader('Access-Control-Allow-Methods', 'GET, POST')
 	res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
@@ -13,43 +22,35 @@ http.createServer((req, res) => {
 	if (req.method === 'OPTIONS') {
 		res.writeHead(204);
 		res.end();
-	} else if (req.method === 'GET' && req.url?.startsWith('/e/')) {
-		const eventName = req.url
+	} else if (req.method === 'GET' && url.pathname.startsWith('/e/') && id) {
+		const eventName = url.pathname
 
-		const listener = (data) => {
-			// console.log('event', data)
-			res.write('data: ' + JSON.stringify(data) + '\n\n')
+		const listener = (type, id, data = undefined) => {
+			res.write(`data: ${JSON.stringify({type, id, data})}\n\n`)
 		}
 
-		eventEmitter.on(eventName, listener)
-
-		/*res.on('error', (err) => {
-			console.error('res error', err)
-		})*/
 		res.on('close', () => {
 			eventEmitter.off(eventName, listener)
-			//console.log('res close')
+			eventEmitter.emit(eventName, 'off', id)
 		})
-		/*res.on('finish', () => {
-			//console.log('res finish')
-		})*/
+		res.on('error', (err) => {
+			console.error('res error', err)
+		})
 
 		res.writeHead(200, {'Content-Type': 'text/event-stream'})
-		res.write('data: ok\n\n')
-
-	} else if (req.method === 'POST' && req.url?.startsWith('/e/') && eventEmitter.eventNames().includes(req.url)) {
-		const eventName = req.url
+		listener('ok', id)
+		eventEmitter.on(eventName, listener)
+		eventEmitter.emit(eventName, 'on', id)
+	} else if (req.method === 'POST' && url.pathname.startsWith('/e/') && eventEmitter.listenerCount(url.pathname) > 0 && id) {
+		const eventName = url.pathname
 		const rawData: Buffer[] = []
 		req.on('data', (chunk: Buffer) => {
-			if (Buffer.isBuffer(chunk)) {
-				rawData.push(chunk)
-			}
+			if (Buffer.isBuffer(chunk)) rawData.push(chunk)
 		})
 		req.on('end', () => {
 			try {
 				const data = JSON.parse(Buffer.concat(rawData).toString('utf-8'))
-				//console.log('req end', data)
-				eventEmitter.emit(eventName, data)
+				eventEmitter.emit(eventName, 'data', id, data)
 				res.writeHead(201)
 			} catch (e) {
 				console.error(e)
@@ -59,10 +60,8 @@ http.createServer((req, res) => {
 			}
 		})
 	} else {
-		//console.warn('404', eventEmitter.eventNames())
 		res.writeHead(404);
 		res.end();
 	}
-
 }).listen(process.env.PORT ?? 8125, '0.0.0.0');
 console.log('Server running at http://127.0.0.1:8125/');
