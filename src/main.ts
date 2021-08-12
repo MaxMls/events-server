@@ -30,6 +30,7 @@ http.createServer((req, res) => {
 		}
 
 		res.on('close', () => {
+			console.log('close', eventName, id)
 			eventEmitter.off(eventName, listener)
 			eventEmitter.emit(eventName, 'off', id)
 		})
