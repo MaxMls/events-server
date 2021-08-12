@@ -28,11 +28,20 @@ http.createServer((req, res) => {
 		const listener = (type, id, data = undefined) => {
 			res.write(`data: ${JSON.stringify({type, id, data})}\n\n`)
 		}
+		const closeEvent = () => {
+			if (eventEmitter.listeners(eventName).includes(listener)) {
+				eventEmitter.off(eventName, listener)
+				eventEmitter.emit(eventName, 'off', id)
+			}
+		}
 
 		res.on('close', () => {
 			console.log('close', eventName, id)
-			eventEmitter.off(eventName, listener)
-			eventEmitter.emit(eventName, 'off', id)
+			closeEvent()
+		})
+		res.on('finish', () => {
+			console.log('finish', eventName, id)
+			closeEvent()
 		})
 		res.on('error', (err) => {
 			console.error('res error', err)
