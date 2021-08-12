@@ -10,7 +10,9 @@ const destroyEvent = (eventName) => {
 	events.delete(eventName)
 }*/
 
-http.createServer((req, res) => {
+
+const server = http.createServer({}, (req, res) => {
+	res.shouldKeepAlive = false
 	const url = new URL(req.url, req.headers.origin || 'http://localhost');
 	const id = url.searchParams.get('id')
 	res.setHeader('Cache-Control', 'no-cache')
@@ -18,6 +20,7 @@ http.createServer((req, res) => {
 	res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*')
 	res.setHeader('Access-Control-Max-Age', 2592000)
 	res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+	res.setHeader('Connection', 'close')
 
 	if (req.method === 'OPTIONS') {
 		res.writeHead(204);
@@ -74,4 +77,6 @@ http.createServer((req, res) => {
 		res.end();
 	}
 }).listen(process.env.PORT ?? 8125, '0.0.0.0');
+
+server.keepAliveTimeout = 0
 console.log('Server running at http://127.0.0.1:8125/');
