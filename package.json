@@ -9,16 +9,21 @@
   },
   "scripts": {
     "dev": "tsnd ./src/main.ts",
+    "build": " rm -rf dist && tsc && cp -rf src/assets dist",
     "start": "node ./dist/main.js",
-    "build": "tsc"
+    "buildStart": "npm run build && npm run start",
+    "format": "prettier-eslint --write \"src/**/*.{ts,vue,json,scss,js,html}\""
   },
-  "pre-commit": [
-    "build"
-  ],
   "devDependencies": {
     "@types/node": "^16.4.3",
     "ts-node-dev": "^1.1.8",
     "typescript": "^4.3.5",
-    "pre-commit": "^1.2.2"
+    "eslint": "^8.29.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "^2.8.1",
+    "prettier-eslint-cli": "^7.1.0",
+    "@typescript-eslint/eslint-plugin": "^5.46.0",
+    "@typescript-eslint/parser": "^5.46.0"
   }
 }

@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  client:
+    restart: unless-stopped
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/app
+    environment:
+      - PORT=80
+

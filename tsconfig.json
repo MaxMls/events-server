@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "target": "esnext",
-    "module": "esnext",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "strict": true,
     "jsx": "preserve",
@@ -15,5 +15,10 @@
     "allowJs": false,
     "outDir": "./dist"
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts"]
+  "ts-node": {
+    "compilerOptions": {
+      "module": "CommonJS"
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.html"]
 }

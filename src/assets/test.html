@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+
+  <body>
+    test page (open source code)
+    <script>
+      const url = location.origin + "/e/";
+      const eventName = "ping/pong";
+      const id = "test";
+
+      const listenEvent = (eventName, id) => {
+        const source = new EventSource(url + eventName + "?id=" + id, {
+          withCredentials: false
+        });
+
+        source.onmessage = (e) => {
+          if (e.data === "ok") {
+            console.log("start listen");
+          } else {
+            const res = JSON.parse(e.data);
+            console.log("new event:", res); // new event: some info
+          }
+        };
+
+        source.onerror = (e) => {
+          console.error(e);
+        };
+      };
+      window.listenEvent = listenEvent;
+
+      const emitEvent = async (eventName, id, data) => {
+        const res = await fetch(url + eventName + "?id=" + id, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(data)
+        });
+
+        if (!res.ok) console.error(res.statusText);
+      };
+
+      window.emitEvent = emitEvent;
+    </script>
+  </body>
+</html>
