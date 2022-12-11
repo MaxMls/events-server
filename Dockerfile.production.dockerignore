@@ -1,0 +1,13 @@
+# **
+
+# !libs/**
+# !client/**
+
+.git
+**/.yalc
+**/node_modules
+**/dist
+deployment
+
+**/Dockerfile.production
+**/Dockerfile.production.dockerignore

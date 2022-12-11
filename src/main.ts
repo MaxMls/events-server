@@ -11,6 +11,7 @@ const server = http.createServer();
 
 const host = process.env.HOST ?? "0.0.0.0";
 const port = process.env.PORT ? +process.env.PORT : 80;
+const timeout = process.env.TIMEOUT ? +process.env.TIMEOUT : 7000;
 
 server.on("request", (request, response) => {
   request.on("error", (error) => {
@@ -31,8 +32,6 @@ server.on("request", (request, response) => {
 });
 
 server.on("request", (request, response) => {
-  response.shouldKeepAlive = false;
-
   if (!request.url) {
     response.writeHead(400);
     response.end();
@@ -46,6 +45,7 @@ server.on("request", (request, response) => {
 
   /** listener or emitter clientside id */
   const id = url.searchParams.get("id");
+  // const clientPing = url.searchParams.get("clientPing");
 
   if (request.method === "OPTIONS") {
     response.writeHead(204);
@@ -53,15 +53,39 @@ server.on("request", (request, response) => {
   } else if (request.method === "GET" && url.pathname.startsWith("/e/") && id) {
     const eventName = url.pathname;
 
-    const listener = (type, id, data = undefined) => {
-      response.write(`data: ${JSON.stringify({ type, id, data })}\n\n`);
+    const listener = (type, sourceId, data = undefined) => {
+      if (sourceId === id) {
+        resetTimeout();
+      }
+      if (data === "ping") {
+        return;
+      }
+
+      response.write(
+        `data: ${JSON.stringify({ type, id: sourceId, data })}\n\n`
+      );
     };
+
+    let timeoutId;
+
     const closeEvent = () => {
+      clearTimeout(timeoutId);
       if (eventEmitter.listeners(eventName).includes(listener)) {
+        request.destroy();
         eventEmitter.off(eventName, listener);
         eventEmitter.emit(eventName, "off", id);
       }
     };
+
+    const resetTimeout = () => {
+      if (timeoutId !== undefined) {
+        clearTimeout(timeoutId);
+      }
+      timeoutId = setTimeout(closeEvent, timeout);
+    };
+
+    resetTimeout();
+
     request.on("error", (error) => {
       console.log("request error", eventName, id);
       closeEvent();
@@ -127,8 +151,8 @@ server.on("connection", (socket) => {
   //socket.destroy();
   socket.on("close", () => {
     console.log("socket close");
-	connections--;
-	console.log({ connections });
+    connections--;
+    console.log({ connections });
   });
   //   socket.on("ready", () => {
   //     console.log("socket ready");

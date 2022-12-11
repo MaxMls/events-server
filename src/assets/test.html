@@ -14,23 +14,31 @@
       const eventName = "ping/pong";
       const id = "test";
 
-      const listenEvent = (eventName, id) => {
+      const listenEvent = (eventName, id, pingInterval = 2000) => {
         const source = new EventSource(url + eventName + "?id=" + id, {
           withCredentials: false
         });
 
         source.onmessage = (e) => {
-          if (e.data === "ok") {
-            console.log("start listen");
-          } else {
-            const res = JSON.parse(e.data);
-            console.log("new event:", res); // new event: some info
-          }
+          const res = JSON.parse(e.data);
+          console.log("new event:", res); // new event: some info
+        };
+
+        const sourseClose = source.close.bind(source);
+
+        source.close = () => {
+          clearInterval(interval);
+          sourseClose();
         };
 
         source.onerror = (e) => {
+          source.close();
           console.error(e);
         };
+
+        const interval = setInterval(() => {
+          emitEvent(eventName, id, "ping");
+        }, pingInterval);
       };
       window.listenEvent = listenEvent;
 
