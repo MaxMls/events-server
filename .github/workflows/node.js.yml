@@ -56,6 +56,6 @@ jobs:
         # password: ${{ secrets.PASSWORD }}
         key: ${{ secrets.KEY }}
         port: 22
-        source: "dist"
+        source: "*"
         target: /srv/events-server/
         rm: true
