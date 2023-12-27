@@ -48,6 +48,6 @@ jobs:
         username: ${{ secrets.USERNAME }}
         port: ${{ secrets.PORT }}
         key: ${{ secrets.KEY }}
-        source: "artifact"
+        source: "artifact/*"
         target: /srv/events-server/
         rm: true
